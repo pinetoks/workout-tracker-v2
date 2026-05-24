@@ -89,37 +89,37 @@
     .day-cell {
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
       justify-content: space-between;
       border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--surface);
+      border: 1px solid #1a1a2c;
+      background: #111120;
       cursor: pointer;
-      transition: transform 0.12s, border-color 0.12s;
+      transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
       position: relative;
-      padding: 8px;
-      min-height: 52px;
+      overflow: hidden;
+      padding: 7px;
+      min-height: 56px;
     }
     .day-cell:active { transform: scale(0.94); }
     .day-cell.other-month { opacity: 0; pointer-events: none; }
-    .day-cell.is-today {
-      border-color: #5a5adc;
-      box-shadow: 0 0 0 1px #5a5adc;
-    }
+    .day-cell.is-today { border-color: #5a5adc; box-shadow: 0 0 0 1px #5a5adc; }
 
+    .day-bands { position: absolute; inset: 0; display: flex; flex-direction: column; }
+    .day-band  { flex: 1; opacity: 0.82; }
+
+    .day-top { position: relative; z-index: 1; }
     .day-num {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 700;
       color: #3c3c5a;
       line-height: 1;
     }
     .day-cell.is-today .day-num { color: #fff; }
-    .day-cell.has-workout .day-num { color: rgba(255,255,255,0.92); }
+    .day-cell.has-workout .day-num { color: rgba(255,255,255,0.92); text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
 
-    .day-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-    }
+    .day-tags { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 3px; margin-top: auto; }
+    .day-tag  { font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px;
+                padding: 2px 4px; border-radius: 4px; background: rgba(0,0,0,0.38); color: rgba(255,255,255,0.92); }
 
     /* ── Legend ── */
     #legend {
@@ -874,39 +874,23 @@ function renderCalendar() {
     const workout = workoutData[key];
     const isToday = key === today && c.cur;
 
-    const hasBPs = workout && c.cur && getBodyParts(workout).length > 0;
-    const el = document.createElement('div');
-    el.className = 'day-cell'
+    const bps = c.cur && workout ? getBodyParts(workout) : [];
+    const hasBPs = bps.length > 0;
+    const cls = 'day-cell'
       + (c.cur ? '' : ' other-month')
       + (isToday ? ' is-today' : '')
       + (hasBPs ? ' has-workout' : '');
 
-    if (hasBPs) {
-      el.style.background = getBPBackground(getBodyParts(workout));
-      el.style.borderColor = 'transparent';
-    }
+    const bands = hasBPs
+      ? `<div class="day-bands">${bps.map(id => `<div class="day-band" style="background:${getBP(id)?.color||'#888'}"></div>`).join('')}</div>`
+      : '';
+    const tags = hasBPs
+      ? `<div class="day-tags">${bps.map(id => `<span class="day-tag">${(getBP(id)?.label||id).slice(0,3).toUpperCase()}</span>`).join('')}</div>`
+      : '';
 
-    const numEl = document.createElement('div');
-    numEl.className = 'day-num';
-    numEl.textContent = c.d;
-    el.appendChild(numEl);
-
-    if (hasBPs) {
-      const dotsRow = document.createElement('div');
-      dotsRow.style.cssText = 'display:flex;gap:3px;';
-      getBodyParts(workout).forEach(bpId => {
-        const bp = getBP(bpId);
-        if (bp) {
-          const dot = document.createElement('div');
-          dot.className = 'day-dot';
-          dot.style.background = bp.color;
-          dotsRow.appendChild(dot);
-        }
-      });
-      el.appendChild(dotsRow);
-    } else {
-      el.appendChild(document.createElement('div'));
-    }
+    const el = document.createElement('div');
+    el.className = cls;
+    el.innerHTML = `${bands}<div class="day-top"><span class="day-num">${c.d}</span></div>${tags}`;
 
     if (c.cur) el.addEventListener('click', () => openSheet(key));
     grid.appendChild(el);
