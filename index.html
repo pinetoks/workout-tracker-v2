@@ -261,7 +261,8 @@
       justify-content: space-between;
       margin-bottom: 10px;
     }
-    .ex-name { font-size: 15px; font-weight: 700; }
+    .ex-name { font-size: 15px; font-weight: 700; outline: none; border-radius: 4px; padding: 2px 4px; margin: -2px -4px; }
+    .ex-name:focus { background: rgba(255,255,255,0.07); }
     .icon-btn {
       background: none; border: none;
       color: var(--text2); font-size: 20px;
@@ -702,8 +703,8 @@ const BODY_PARTS = [
 ];
 
 const PRESETS = {
-  back:      ['Deadlift','Pull-ups','Barbell Row','Lat Pulldown','Seated Cable Row','T-Bar Row','Single Arm Row','Face Pull'],
-  legs:      ['Squat','Leg Press','Romanian Deadlift','Leg Curl','Leg Extension','Calf Raises','Lunges','Hack Squat'],
+  back:      ['Deadlift','Pull-ups','Barbell Row','Lat Pulldown','Seated Cable Row','T-Bar Row','Single Arm Row','Face Pull','Reverse Row'],
+  legs:      ['Squat','Leg Press','Romanian Deadlift','Leg Curl','Leg Extension','Calf Raises','Lunges','Hack Squat','Bulgarian Squat'],
   chest:     ['Bench Press','Incline Bench Press','Dumbbell Fly','Push-ups','Cable Fly','Decline Bench Press','Chest Dips'],
   arms:      ['Bicep Curl','Hammer Curl','Tricep Pushdown','Skull Crushers','Preacher Curl','Tricep Overhead Ext.','Concentration Curl'],
   shoulders: ['Overhead Press','Lateral Raise','Front Raise','Arnold Press','Upright Row','Reverse Fly','Shrugs'],
@@ -946,7 +947,7 @@ function renderSheet() {
     (w.exercises || []).forEach((ex, ei) => {
       html += `<div class="exercise-card">
         <div class="ex-card-head">
-          <div class="ex-name">${ex.name}</div>
+          <span class="ex-name" contenteditable="true" spellcheck="false" data-rename-ex="${ei}">${ex.name}</span>
           <div style="display:flex;align-items:center;gap:8px">
             <button class="icon-btn chart-btn" data-history-name="${ex.name}" style="color:#4A90E2;padding:0;display:flex;align-items:center;justify-content:center">
               <svg width="17" height="17" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1070,6 +1071,23 @@ function renderSheet() {
     };
     ta.addEventListener('change', save);
     ta.addEventListener('blur', save);
+  });
+
+  // ── Rename exercise
+  inner.querySelectorAll('[data-rename-ex]').forEach(el => {
+    el.addEventListener('blur', () => {
+      const ei = +el.dataset.renameEx;
+      const newName = el.textContent.trim();
+      if (newName && workoutData[selectedDate]?.exercises[ei]) {
+        workoutData[selectedDate].exercises[ei].name = newName;
+        saveData();
+      } else if (!newName) {
+        el.textContent = workoutData[selectedDate]?.exercises[ei]?.name || '';
+      }
+    });
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+    });
   });
 
   // ── History buttons (chart icon in set-headers row)
