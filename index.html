@@ -13,13 +13,13 @@
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     :root {
-      --bg: #121212;
-      --surface: #1E1E1E;
-      --surface2: #2A2A2A;
-      --surface3: #383838;
-      --text: #FFFFFF;
-      --text2: #888888;
-      --border: #2E2E2E;
+      --bg: #09090f;
+      --surface: #111120;
+      --surface2: #16162a;
+      --surface3: #222240;
+      --text: #d8d8ee;
+      --text2: #7070a0;
+      --border: #1a1a2c;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 20px);
     }
@@ -66,13 +66,16 @@
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       padding: 0 8px;
+      gap: 7px;
       margin-bottom: 2px;
     }
     #weekdays span {
       text-align: center;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text2);
+      font-size: 11px;
+      font-weight: 700;
+      color: #333350;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
       padding: 2px 0;
     }
 
@@ -80,39 +83,42 @@
     #calGrid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 3px;
+      gap: 7px;
       padding: 0 8px;
     }
     .day-cell {
-      aspect-ratio: 1;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      align-items: flex-start;
+      justify-content: space-between;
       border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
       cursor: pointer;
-      transition: transform 0.1s;
+      transition: transform 0.12s, border-color 0.12s;
       position: relative;
+      padding: 8px;
+      min-height: 52px;
     }
-    .day-cell:active { transform: scale(0.88); }
+    .day-cell:active { transform: scale(0.94); }
     .day-cell.other-month { opacity: 0; pointer-events: none; }
+    .day-cell.is-today {
+      border-color: #5a5adc;
+      box-shadow: 0 0 0 1px #5a5adc;
+    }
 
     .day-num {
-      font-size: 15px;
-      font-weight: 500;
-      width: 30px; height: 30px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .day-cell.is-today .day-num {
-      background: #fff;
-      color: #000;
-      border-radius: 50%;
+      font-size: 13px;
       font-weight: 700;
+      color: #3c3c5a;
+      line-height: 1;
     }
+    .day-cell.is-today .day-num { color: #fff; }
+    .day-cell.has-workout .day-num { color: rgba(255,255,255,0.92); }
+
     .day-dot {
-      width: 7px; height: 7px;
+      width: 6px; height: 6px;
       border-radius: 50%;
-      margin-top: 2px;
     }
 
     /* ── Legend ── */
@@ -155,21 +161,21 @@
     }
     .stat-card {
       flex: 1;
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: #111120;
+      border: 1px solid #1c1c30;
       border-radius: 12px;
-      padding: 12px 14px;
+      padding: 14px 16px;
     }
     .stat-val {
-      font-size: 26px;
+      font-size: 28px;
       font-weight: 700;
-      color: var(--text);
+      color: #fff;
       line-height: 1;
     }
     .stat-lbl {
       font-size: 10px;
-      color: var(--text2);
-      margin-top: 5px;
+      color: #44445a;
+      margin-top: 6px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       font-weight: 600;
@@ -685,14 +691,14 @@ const BODY_ICONS = {
 };
 
 const BODY_PARTS = [
-  { id:'back',      label:'Back',      color:'#4A90E2', icon:'🏋️' },
-  { id:'legs',      label:'Legs',      color:'#4CAF50', icon:'🦵' },
-  { id:'chest',     label:'Chest',     color:'#EF5350', icon:'🫁' },
-  { id:'arms',      label:'Arms',      color:'#AB47BC', icon:'💪' },
-  { id:'shoulders', label:'Shoulders', color:'#FF9800', icon:'⬆️' },
-  { id:'core',      label:'Core',      color:'#26C6DA', icon:'🎯' },
-  { id:'cardio',    label:'Cardio',    color:'#EC407A', icon:'🏃' },
-  { id:'rest',      label:'Rest',      color:'#607D8B', icon:'😴' },
+  { id:'back',      label:'Back',      color:'#38BDF8', icon:'🏋️' },
+  { id:'legs',      label:'Legs',      color:'#4ADE80', icon:'🦵' },
+  { id:'chest',     label:'Chest',     color:'#EF4444', icon:'🫁' },
+  { id:'arms',      label:'Arms',      color:'#FB923C', icon:'💪' },
+  { id:'shoulders', label:'Shoulders', color:'#C084FC', icon:'⬆️' },
+  { id:'core',      label:'Core',      color:'#FACC15', icon:'🎯' },
+  { id:'cardio',    label:'Cardio',    color:'#94A3B8', icon:'🏃' },
+  { id:'rest',      label:'Rest',      color:'#555570', icon:'😴' },
 ];
 
 const PRESETS = {
@@ -868,12 +874,16 @@ function renderCalendar() {
     const workout = workoutData[key];
     const isToday = key === today && c.cur;
 
+    const hasBPs = workout && c.cur && getBodyParts(workout).length > 0;
     const el = document.createElement('div');
-    el.className = 'day-cell' + (c.cur ? '' : ' other-month') + (isToday ? ' is-today' : '');
+    el.className = 'day-cell'
+      + (c.cur ? '' : ' other-month')
+      + (isToday ? ' is-today' : '')
+      + (hasBPs ? ' has-workout' : '');
 
-    if (workout && c.cur) {
-      const bps = getBodyParts(workout);
-      if (bps.length > 0) el.style.background = getBPBackground(bps);
+    if (hasBPs) {
+      el.style.background = getBPBackground(getBodyParts(workout));
+      el.style.borderColor = 'transparent';
     }
 
     const numEl = document.createElement('div');
@@ -881,22 +891,21 @@ function renderCalendar() {
     numEl.textContent = c.d;
     el.appendChild(numEl);
 
-    if (workout && c.cur) {
-      const bps = getBodyParts(workout);
-      if (bps.length > 0) {
-        const dotsRow = document.createElement('div');
-        dotsRow.style.cssText = 'display:flex;gap:3px;margin-top:2px;';
-        bps.forEach(bpId => {
-          const bp = getBP(bpId);
-          if (bp) {
-            const dot = document.createElement('div');
-            dot.className = 'day-dot';
-            dot.style.background = bp.color;
-            dotsRow.appendChild(dot);
-          }
-        });
-        el.appendChild(dotsRow);
-      }
+    if (hasBPs) {
+      const dotsRow = document.createElement('div');
+      dotsRow.style.cssText = 'display:flex;gap:3px;';
+      getBodyParts(workout).forEach(bpId => {
+        const bp = getBP(bpId);
+        if (bp) {
+          const dot = document.createElement('div');
+          dot.className = 'day-dot';
+          dot.style.background = bp.color;
+          dotsRow.appendChild(dot);
+        }
+      });
+      el.appendChild(dotsRow);
+    } else {
+      el.appendChild(document.createElement('div'));
     }
 
     if (c.cur) el.addEventListener('click', () => openSheet(key));
