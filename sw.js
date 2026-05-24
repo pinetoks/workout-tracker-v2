@@ -1,5 +1,5 @@
-const CACHE = 'workout-v13';
-const FILES = ['./index.html', './manifest.json'];
+const CACHE = 'workout-v14';
+const FILES = ['./index.html', './manifest.json', './icon.jpeg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));

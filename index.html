@@ -8,6 +8,7 @@
   <meta name="apple-mobile-web-app-title" content="Workout">
   <title>Workout Tracker</title>
   <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.jpeg">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -129,28 +130,21 @@
     }
     .legend-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
     }
     .legend-item {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 5px;
-      padding: 12px 6px;
-      border-radius: 14px;
-      border: none;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text);
-      transition: transform 0.1s;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text2);
     }
-    .legend-item:active { transform: scale(0.92); }
-    .legend-icon { width: 44px; height: 48px; }
-    .legend-icon svg { width: 100%; height: 100%; }
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
 
     /* ── Overlay ── */
     #overlay {
@@ -830,10 +824,10 @@ function renderLegend() {
   const g = document.getElementById('legendGrid');
   g.innerHTML = '';
   BODY_PARTS.forEach(bp => {
-    g.innerHTML += `<button class="legend-item" style="background:${bp.color}28;border:1.5px solid ${bp.color}60">
-      <div class="legend-icon">${BODY_ICONS[bp.id] || ''}</div>
+    g.innerHTML += `<div class="legend-item">
+      <div class="legend-dot" style="background:${bp.color}"></div>
       <span>${bp.label}</span>
-    </button>`;
+    </div>`;
   });
 }
 
