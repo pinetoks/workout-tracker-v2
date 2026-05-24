@@ -793,15 +793,13 @@ function formatDate(s) {
 function renderStats() {
   const now = new Date();
 
-  // Day streak: consecutive days back from today with any workout
-  let streak = 0;
-  const chk = new Date(now);
-  while (true) {
-    const k = `${chk.getFullYear()}-${pad(chk.getMonth()+1)}-${pad(chk.getDate())}`;
-    if (workoutData[k] && getBodyParts(workoutData[k]).length > 0) {
-      streak++;
-      chk.setDate(chk.getDate() - 1);
-    } else break;
+  // Cardio days in last 28 days
+  let cardio28 = 0;
+  for (let i = 0; i < 28; i++) {
+    const d = new Date(now);
+    d.setDate(now.getDate() - i);
+    const k = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    if (workoutData[k] && getBodyParts(workoutData[k]).includes('cardio')) cardio28++;
   }
 
   // This week: Mon → today
@@ -825,8 +823,8 @@ function renderStats() {
 
   document.getElementById('stats').innerHTML = `
     <div class="stat-card">
-      <div class="stat-val">${streak}${streak >= 3 ? ' 🔥' : ''}</div>
-      <div class="stat-lbl">Day Streak</div>
+      <div class="stat-val">${cardio28}</div>
+      <div class="stat-lbl">Cardio Days (28D)</div>
     </div>
     <div class="stat-card">
       <div class="stat-val">${thisWeek}</div>
